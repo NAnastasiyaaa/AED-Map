@@ -31,6 +31,7 @@ import RouteDetails from './components/RouteDetails';
 import DefibrillatorPinLayer from './layers/DefibrillatorPinLayer';
 import GeoLocationButton from './components/GeoLocationButton';
 import QuickSearchButton from './components/QuickSearchButton';
+import { getAvailableDefItems } from 'modules/Sidebar/api';
 
 const useStyles = makeStyles(() => ({
   mapContainer: ({ visible }) => ({
@@ -161,6 +162,45 @@ const MapHolder = ({
     });
   };
 
+  const coords = useSelector(
+    state => state.userPosition.coords
+  );
+  const geolocationProvided = useSelector(
+    state => state.userPosition.geolocationProvided
+  );
+  const [, ShowAlert] = useAlert();
+
+  const getNearestDefibrillators = async (types = type) => {
+    let nearestItem;
+    if (geolocationProvided) {
+      nearestItem = await getAvailableDefItems({
+        longitude: coords.lng,
+        latitude: coords.lat
+      });
+    } else {
+      ShowAlert({
+        open: true,
+        severity: 'error',
+        message: 'Позиція користувача не знайдена'
+      });
+      return;
+    }
+
+    if (nearestItem.data.listDefs) {
+      const [
+        lng,
+        lat
+      ] = nearestItem.data.listDefs.location.coordinates;
+      await getRouteToPosition(lng, lat, types);
+    } else {
+      ShowAlert({
+        open: true,
+        severity: 'error',
+        message: 'Пристроїв поблизу не виявлено'
+      });
+    }
+  };
+
   useEffect(() => {
     if (Object.keys(newPoint).length !== 0) {
       const { lng, lat } = newPoint;
@@ -244,7 +284,7 @@ const MapHolder = ({
   return (
     <div className={classes.mapContainer}>
       <QuickSearchButton
-        getRouteToPosition={getRouteToPosition}
+        getNearestDefibrillators={getNearestDefibrillators}
       />
       <GeoLocationButton
         currentLocation={getCurrentLocation}
@@ -266,6 +306,9 @@ const MapHolder = ({
         <RouteDetails
           onClose={closeRoute}
           details={routeDetails}
+          getNearestDefibrillators={
+            getNearestDefibrillators
+          }
           getRouteToPosition={getRouteToPosition}
         />
       )}

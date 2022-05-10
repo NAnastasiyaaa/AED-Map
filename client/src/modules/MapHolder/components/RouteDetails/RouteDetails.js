@@ -1,11 +1,11 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { changeType } from 'modules/MapHolder/actions/mapState';
+import { makeStyles } from '@material-ui/core/styles';
 import { DirectionsCarSharp } from '@material-ui/icons';
 import { DirectionsBike } from '@material-ui/icons';
 import { IconButton } from '@material-ui/core';
+import { changeType } from 'modules/MapHolder/actions/mapState';
 
 const detailsStyle = {
   container: {
@@ -70,10 +70,18 @@ const useStyles = makeStyles(theme => ({
     '&:hover': {
       backgroundColor: ' inherit',
       opacity: 0.4
+    },
+    '&:focus': {
+      background: 'blue',
+      opacity: 1
     }
   },
   type_icon_selected: {
-    backgroundColor: 'blue',
+    '&:hover': {
+      background: ' blue',
+      opacity: 0.4
+    },
+    background: 'blue',
     width: '30px',
     height: '30px'
   }
@@ -82,7 +90,8 @@ const useStyles = makeStyles(theme => ({
 function RouteDetails({
   onClose,
   details,
-  getRouteToPosition
+  getRouteToPosition,
+  getNearestDefibrillators
 }) {
   const dispatch = useDispatch();
   const { distance, duration } = details;
@@ -97,8 +106,8 @@ function RouteDetails({
   const lng = useSelector(reducer => reducer.mapState.lng);
 
   const handleClick = type => {
-    dispatch(changeType(type));
-    getRouteToPosition(lng, lat, type);
+      getNearestDefibrillators(type)
+      dispatch(changeType(type));
   };
 
   return (

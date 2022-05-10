@@ -2,9 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import useAlert from 'shared/ui/Alert/useAlert';
-import { getAvailableDefItems } from '../../../Sidebar/api/index.js';
-
 const getNearestDeviceButton = {
   fontSize: '0.8rem',
   fontWeight: '900',
@@ -22,49 +19,12 @@ const getNearestDeviceButton = {
   border: '2px solid rgba(0, 0, 0, 0.6)'
 };
 
-function QuickSearchButton({
-  coords,
-  geolocationProvided,
-  getRouteToPosition
-}) {
-  const [, ShowAlert] = useAlert();
-
-  const getNearestDefibrillators = async () => {
-    let nearestItem;
-    if (geolocationProvided) {
-      nearestItem = await getAvailableDefItems({
-        longitude: coords.lng,
-        latitude: coords.lat
-      });
-    } else {
-      ShowAlert({
-        open: true,
-        severity: 'error',
-        message: 'Позиція користувача не знайдена'
-      });
-      return;
-    }
-
-    if (nearestItem.data.listDefs) {
-      const [
-        lng,
-        lat
-      ] = nearestItem.data.listDefs.location.coordinates;
-      await getRouteToPosition(lng, lat);
-    } else {
-      ShowAlert({
-        open: true,
-        severity: 'error',
-        message: 'Пристроїв поблизу не виявлено'
-      });
-    }
-  };
-
+function QuickSearchButton({ getNearestDefibrillators }) {
   return (
     <button
       style={getNearestDeviceButton}
       type="button"
-      onClick={getNearestDefibrillators}
+      onClick={() => getNearestDefibrillators()}
     >
       Знайти пристрій
     </button>
@@ -72,8 +32,7 @@ function QuickSearchButton({
 }
 
 QuickSearchButton.propTypes = {
-  coords: PropTypes.object.isRequired,
-  getRouteToPosition: PropTypes.func.isRequired
+  coords: PropTypes.object.isRequired
 };
 
 export default connect(
